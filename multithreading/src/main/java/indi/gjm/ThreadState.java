@@ -11,56 +11,55 @@ import java.util.concurrent.TimeUnit;
 public class ThreadState {
 
     public static void main(String[] args) throws Exception {
-        Object lock = new Object();
-        Thread thread1 = null, thread2 = null, thread3 = null, thread4 = null;
 
-        thread1 = new Thread(() -> {
-            synchronized(lock) {
-                //WAITING
-                try {
-                    lock.wait();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread2 = new Thread(() -> {
-            try {
-                //TIMED_WAITING
-                TimeUnit.SECONDS.sleep(5);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
-        thread3 = new Thread(() -> {
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            //BLOCKED
-            synchronized(lock) {
-            }
-        });
-
-        Thread finalThread1 = thread1;
-        Thread finalThread2 = thread2;
-        Thread finalThread3 = thread3;
-        thread4 = new Thread(() -> {
-            //RUNNABLE
-            System.out.println(Thread.currentThread().getState());
-            System.out.println(finalThread1.getState());
-            System.out.println(finalThread2.getState());
-            System.out.println(finalThread3.getState());
-        });
         //NEW
-        System.out.println(thread1.getState());
-        TimeUnit.SECONDS.sleep(1);
+        System.out.println(new Thread().getState());
+
+        //RUNNABLE
+        System.out.println(Thread.currentThread().getState());
+
+        Object lock = new Object();
+
+        //TIMED_WAITING
+        Thread thread1 = new Thread(() -> {
+            try {
+                synchronized (lock) {
+                    TimeUnit.SECONDS.sleep(2);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        //WAITING
+        Thread thread2 = new Thread(() -> {
+            try {
+                thread1.join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        //BLOCKED
+        Thread thread3 = new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            synchronized (lock) {
+            }
+        });
+
         thread1.start();
         thread2.start();
         thread3.start();
-        thread4.start();
+        TimeUnit.SECONDS.sleep(1);
+        System.out.println(thread1.getState());
+        System.out.println(thread2.getState());
+        System.out.println(thread3.getState());
+        TimeUnit.SECONDS.sleep(2);
+        System.out.println(thread1.getState());
     }
 
 }

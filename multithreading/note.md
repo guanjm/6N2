@@ -15,26 +15,26 @@
 PS：1和2方式需通过start()方法来执行
 
 #Thread的状态
-- ##NEW 
+- ##NEW(0)
     线程还未执行start()方法
-- ##RUNNABLE
+- ##RUNNABLE(4)
     线程已执行start()方法，处于执行中或待执行，根据系统cpu来控制
-- ##BLOCKED
+- ##BLOCKED(1024)
     线程阻塞等待锁
     - wait for monitor lock
-- ##WAITING
+- ##WAITING(16)
     线程等待
     - Object.wait()
     - Thread.join()
     - LockSupport.park()
-- ##TIMED_WAITING
+- ##TIMED_WAITING(32)
     线程等待，并提供超时
     - Thread.sleep(times)
     - Object.wait(times)
     - Thread.join(times)
     - LockSupport.parkNanos(times)
     - LockSupport.until(times)
--  ##TERMINATED
+-  ##TERMINATED(2)
     线程执行完成状态
     
 # 线程的常用方法
