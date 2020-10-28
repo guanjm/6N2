@@ -7,11 +7,11 @@ import static java.lang.Thread.yield;
 
 /**
  * 线程的实现方式
- * @Author : ex_guanjm
+ * @Author : guanjm
  * @Date: 2020/10/28 10:36
  *
  */
-public class ThreadImplement {
+public class T1_ThreadImplement {
 
     public static void main(String[] args) {
         //方式一：

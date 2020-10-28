@@ -4,11 +4,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 线程状态
- * @Author : ex_guanjm
+ * @Author : guanjm
  * @Date: 2020/10/28 17:36
  *
  */
-public class ThreadState {
+public class T2_ThreadState {
 
     public static void main(String[] args) throws Exception {
 
