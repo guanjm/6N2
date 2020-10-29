@@ -52,6 +52,11 @@ PS：1和2方式需通过start()方法来执行
     - notify() 线程唤醒，唤醒一个处于等待的线程（需要持有锁(synchronized)）
         > 1. notify方法调用后不会立即释放锁，等到synchronized方法体执行完后才释放锁。
     - notifyAll() 线程唤醒，唤醒所有处于等待的线程（需要持有锁(synchronized)）
+    
+# synchronized
+- 方法
+ 
+
 
     
 
