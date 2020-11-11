@@ -54,8 +54,19 @@ PS：1和2方式需通过start()方法来执行
     - notifyAll() 线程唤醒，唤醒所有处于等待的线程（需要持有锁(synchronized)）
     
 # synchronized
-- 方法
- 
+## 实现方式
+- 普通方法 + synchronized = 普通方法 + synchronized(实例对象) {}
+- 静态方法 + synchronized = 普通方法 + synchronized(类对象) {}
+> 不属于方法定义，因此不能被继承。  
+> 不能定义构造方法，不过可以用代码块实现  
+> 互斥锁，可重入锁
+> 不能使用String
+
+## 实现原理
+- 
+
+
+
 
 
     
