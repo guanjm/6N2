@@ -6,7 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
- * 客户端
+ * 单客户端
  * @author : guanjm
  * @date: 2020/12/8
  *
@@ -24,6 +24,11 @@ public class SingleClient {
             byte[] bytes = new byte[1024];
             while (System.in.read(bytes) != -1) {
                 outputStream.write(bytes);
+                if (new String(bytes).contains("exit")) {
+                    socket.close();
+                }
+                System.out.println("close");
+                return;
             }
         } catch (IOException e) {
             e.printStackTrace();
