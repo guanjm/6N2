@@ -26,9 +26,9 @@ public class SingleClient {
                 outputStream.write(bytes);
                 if (new String(bytes).contains("exit")) {
                     socket.close();
+                    System.out.println("close");
+                    return;
                 }
-                System.out.println("close");
-                return;
             }
         } catch (IOException e) {
             e.printStackTrace();

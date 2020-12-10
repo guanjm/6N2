@@ -21,7 +21,7 @@ public class BIO {
             //指定端口
             InetSocketAddress inetSocketAddress = new InetSocketAddress(8001);
             //指定请求队列最大长度
-            int backlog = 50;
+            int backlog = 1;
             serverSocket.bind(inetSocketAddress, backlog);
 
             while (true) {
