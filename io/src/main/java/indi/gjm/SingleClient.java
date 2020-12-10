@@ -23,7 +23,8 @@ public class SingleClient {
             OutputStream outputStream = socket.getOutputStream();
             byte[] bytes = new byte[1024];
             while (System.in.read(bytes) != -1) {
-                outputStream.write(bytes);
+//                outputStream.write(bytes);
+                outputStream.write("12312312".getBytes());
                 if (new String(bytes).contains("exit")) {
                     socket.close();
                     System.out.println("close");
