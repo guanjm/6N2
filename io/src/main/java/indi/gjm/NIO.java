@@ -26,6 +26,7 @@ public class NIO {
             //指定请求队列最大长度
             int backlog = 50;
             serverSocketChannel.bind(inetSocketAddress, backlog);
+            //不设置false，accept[阻塞]
             serverSocketChannel.configureBlocking(false);
 
             //存储连接
@@ -64,6 +65,7 @@ public class NIO {
                 SocketChannel channel = serverSocketChannel.accept();
                 if (channel != null) {
                     System.out.println("accept success：" + channel);
+                    //不设置false，read[阻塞]
                     channel.configureBlocking(false);
                     container.add(channel);
                 }
