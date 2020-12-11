@@ -52,7 +52,7 @@ public class NIO {
                         while ((length = channel.read(byteBuffer)) > 0) {
                             //读模式
                             byteBuffer.flip();
-                            System.out.print("client_" + channel.socket().getPort() +": ");
+                            System.out.print("client_"+ channel.socket().getPort() +": ");
                             while (byteBuffer.hasRemaining()) {
                                 System.out.print((char) byteBuffer.get());
                             }
