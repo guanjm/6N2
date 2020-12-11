@@ -19,17 +19,17 @@ public class SingleClient {
             //指定端口
             InetSocketAddress inetSocketAddress = new InetSocketAddress(8001);
             socket.connect(inetSocketAddress);
-            System.out.println("connect success：" + socket);
+            System.out.println("connect by: " + socket.getLocalSocketAddress());
             OutputStream outputStream = socket.getOutputStream();
             byte[] bytes = new byte[1024];
-            while (System.in.read(bytes) != -1) {
-//                outputStream.write(bytes);
-                outputStream.write("12312312".getBytes());
-                if (new String(bytes).contains("exit")) {
+            for (int length; (length = System.in.read(bytes)) != -1;) {
+                outputStream.write(bytes, 0 , length);
+                if ("exit".equals(new String(bytes, 0 , length).replace("\n", ""))) {
                     socket.close();
                     System.out.println("close");
                     return;
                 }
+                bytes = new byte[1024];
             }
         } catch (IOException e) {
             e.printStackTrace();

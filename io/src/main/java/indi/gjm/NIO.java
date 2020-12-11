@@ -31,43 +31,44 @@ public class NIO {
 
             //存储连接
             List<SocketChannel> container = new ArrayList<>();
-            //获取连接数据线程
-            new Thread(() -> {
-                ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
-                while (true) {
-                    Iterator<SocketChannel> iterator = container.iterator();
-                    SocketChannel channel = null;
-                    try {
-                        while (iterator.hasNext()) {
-                            channel = iterator.next();
-                            while (channel.read(byteBuffer) != 0) {
-                                System.out.print("channel：" + channel);
-                                //读模式
-                                byteBuffer.flip();
-                                while (byteBuffer.hasRemaining()) {
-                                    System.out.print((char) byteBuffer.get());
-                                }
-                                byteBuffer.clear();
-                                System.out.println(" ");
-                            }
-                        }
-                    } catch (IOException e) {
-                        iterator.remove();
-                        System.out.println("close channel：" + channel);
-                    } catch (Exception e) {
-
-                    }
-                }
-            }).start();
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
 
             while (true) {
                 //获取请求，当无请求时返回null
-                SocketChannel channel = serverSocketChannel.accept();
-                if (channel != null) {
-                    System.out.println("accept success：" + channel);
+                SocketChannel socketChannel = serverSocketChannel.accept();
+                if (socketChannel != null) {
+                    System.out.println("accept_no_" + count++ + ": " +  socketChannel.getRemoteAddress());
                     //不设置false，read[阻塞]
-                    channel.configureBlocking(false);
-                    container.add(channel);
+                    socketChannel.configureBlocking(false);
+                    container.add(socketChannel);
+                }
+
+                Iterator<SocketChannel> iterator = container.iterator();
+                SocketChannel channel = null;
+                try {
+                    while (iterator.hasNext()) {
+                        channel = iterator.next();
+                        int length;
+                        while ((length = channel.read(byteBuffer)) > 0) {
+                            //读模式
+                            byteBuffer.flip();
+                            System.out.print("client_" + channel.socket().getPort() +": ");
+                            while (byteBuffer.hasRemaining()) {
+                                System.out.print((char) byteBuffer.get());
+                            }
+                            System.out.println();
+                            byteBuffer.clear();
+                        }
+                        if (length == -1) {
+                            iterator.remove();
+                            System.out.println("client_"+ channel.socket().getPort() +": close");
+                        }
+                    }
+                } catch (IOException e) {
+                    iterator.remove();
+                    System.out.println("client_"+ channel.socket().getPort() +": close");
+                } catch (Exception e) {
+
                 }
             }
 

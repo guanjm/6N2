@@ -19,9 +19,9 @@ public class MultiClient {
         for (int i = 0; i < count; i++) {
             try (Socket socket = new Socket()) {
                 socket.connect(inetSocketAddress);
-                System.out.println("connect success：" + socket);
+                System.out.println("connect by：" + socket.getLocalSocketAddress());
             } catch (IOException e) {
-                e.printStackTrace();
+                return;
             }
         }
     }
