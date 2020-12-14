@@ -74,5 +74,76 @@
 >       - 系统pdflush进程定时刷写
 
 ## 命令
-> read/write：系统调用（1、用户态切换内核态，读取硬盘，读取页缓存，页缓存拷贝到buffer）
+> read/write：系统调用（1、用户态切换内核态（需要用户内存和内核内存拷贝），读取硬盘，读取页缓存，页缓存拷贝到buffer）
 > mmap：内存映射文件，直接写入pagecache
+
+## ByteBuffer（java）
+> - 实际是一个指定长度的字节数组容器，通过position，limit，capacity等数据来对数的读写。
+> - flip()读, compact()写, clear()清除，position读/写起点，limit读/写上限，capacity容量
+> - ByteBuffer.allocate(): on heap: jvm堆内
+> - ByteBuffer.allocateDirect(): off heap：jvm堆外，java进程堆内
+> - MappedByteBuffer 映射到内核内存，简而言之，直接操作pagecache
+
+## IO类型
+> 阻塞 （阻塞等待资源，accept，read/write）
+> - accept: 获取建立的连接
+> - read/write: 网卡buffer到内核内存，内核内存到用户内存
+> 非阻塞 （直接返回，因此存在null）
+> 同步 （处理资源）
+> 异步 （linux暂无标准实现）
+
+## 网络IO命令
+> lsof -p [inode]
+> netstat -natp
+> tcpdump
+> strace -off -o out [cmd]
+
+## linux底层
+> - 三次握手
+>   1. socket = sfd
+>   2. bind(sfd, port)
+>   3. listen(sfd)  
+> - 获取连接
+>   4. accept(sfd) -> fd
+> - 获取数据
+>   5. recv(fd)
+>
+> - 多路复用
+>   1. select(fds), poll(fds)
+>   2. epoll_create() 创建红黑树
+>   3. epoll_ctl 把需要监视文件放入红黑树，后续IO中断，回调处理buffer状态，复制到链表。
+>   4. epoll_wait 程序调用，直接获取有状态fd的结果集。 
+
+## blocking
+> - 实现流程：
+>   1. 建立监听（三次握手）
+>   2. 循环（accept）阻塞获取socket
+>   3. 为每个socket创建线程，并（read/write）阻塞读写socket数据，并做相应的业务处理
+> - linux创建线程有最大限制
+>   - ulimit -n 1024
+>   - /proc/sys/fs/file-max
+
+## nonblocking
+> - 实现流程：
+>   1. 建立监听（三次握手）
+>   1. 循环（accept）非阻塞获取socket，若无新连接socket，直接返回null
+>   2. 若有新连接socket，非阻塞读写socket数据，并做相应的业务处理（可通过消息队列异步处理）
+> 1. 代码层遍历所有socket。
+>   - 代码层获取socket，需要用户态转内核态。
+> 2. select，poll，内核遍历所有socket，select FD_SETSIZE=1024 上限
+>   - 每次调用，需传入需遍历的fds
+>   - 每次调用，需遍历所有fd
+>   - java通过jvm内置数据来模拟红黑树，
+> 3. epoll，内核遍历所有socket
+>   - 生成红黑数fd
+>   - 代码层注册需监听fd到红黑数
+>   - 当socket状态变化，记录到列表，（当数据到达网卡，产生IO中断，cpu调回调函数，同时触发记录）
+
+## 阻塞和非阻塞
+> 相同点:
+>   1. 建立在三次握手基础下
+>   2. 本质上通过遍历所有socket来接受数据
+> 差异点：
+>   1. 获取连接
+>   2. 获取连接数据
+>   3. 遍历方式

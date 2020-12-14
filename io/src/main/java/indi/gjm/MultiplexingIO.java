@@ -36,7 +36,7 @@ public class MultiplexingIO {
 
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
             while (true) {
-                int select = selector.select();
+                selector.select();
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
                 while (iterator.hasNext()) {
                     SelectionKey selectionKey = iterator.next();
