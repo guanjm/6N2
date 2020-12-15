@@ -83,6 +83,7 @@
 > - ByteBuffer.allocate(): on heap: jvm堆内
 > - ByteBuffer.allocateDirect(): off heap：jvm堆外，java进程堆内
 > - MappedByteBuffer 映射到内核内存，简而言之，直接操作pagecache
+> on heap < off heap < mmap
 
 ## IO类型
 > 阻塞 （阻塞等待资源，accept，read/write）
@@ -100,19 +101,23 @@
 
 ## linux底层
 > - 三次握手
->   1. socket = sfd
->   2. bind(sfd, port)
->   3. listen(sfd)  
+>   1. socket(PF_INET, SOCK_STREAM, IPPROTO_IP) -> sfd
+>       1. fcntl(sfd, F_SETFL, O_RDWR|O_NONBLOCK)  非阻塞
+>   2. bind(sfd, {sa_family=AF_INET, sin_port=htons(port)})
+>   3. listen(sfd, backlog)  
 > - 获取连接
 >   4. accept(sfd) -> fd
+>       1. fcntl(fd, F_SETFL, O_RDWR|O_NONBLOCK)   非阻塞
 > - 获取数据
 >   5. recv(fd)
 >
 > - 多路复用
->   1. select(fds), poll(fds)
->   2. epoll_create() 创建红黑树
->   3. epoll_ctl 把需要监视文件放入红黑树，后续IO中断，回调处理buffer状态，复制到链表。
->   4. epoll_wait 程序调用，直接获取有状态fd的结果集。 
+>   1. select(fds), poll(fds) -> 
+>   2. epoll_create() -> epfd 创建红黑树
+>   3. epoll_ctl 把需要监视文件放入红黑树，后续IO中断，回调处理buffer状态，复制到链表。[在java中懒加载，selector.select()才调用]
+>   4. epoll_wait 程序调用，直接获取有状态fd的结果集。
+>       - 读状态：read-q有数据就触发
+>       - 写状态：send-q无数据就触发（所以要注意写状态监听注册时机） 
 
 ## blocking
 > - 实现流程：
@@ -140,10 +145,23 @@
 >   - 当socket状态变化，记录到列表，（当数据到达网卡，产生IO中断，cpu调回调函数，同时触发记录）
 
 ## 阻塞和非阻塞
-> 相同点:
+> - 相同点:
 >   1. 建立在三次握手基础下
 >   2. 本质上通过遍历所有socket来接受数据
-> 差异点：
+> - 差异点：
 >   1. 获取连接
 >   2. 获取连接数据
 >   3. 遍历方式
+
+## 10K
+> 1. buff里数据来不及消费，当buff满后，后来的数据会直接抛弃
+> 2. 单机处理连接其实可以达到很大量，不过瓶颈在于数据的业务处理（可通过消息队列异步处理）
+
+## 三次握手
+
+## 四次分手
+> - TIME_WAIT(2MSL) ,消耗四元组
+>       - 不是DDOS攻击，只会对占满端口号的对端无法提供服务，其他对端不受影响。
+>       - net.ipv4.tcp_tw_reuse = 0    是否可重用
+> - 客户端或者服务器都可以作为断开发起方
+> - 
