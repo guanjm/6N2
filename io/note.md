@@ -115,9 +115,10 @@
 >   1. select(fds), poll(fds) -> 
 >   2. epoll_create() -> epfd 创建红黑树
 >   3. epoll_ctl 把需要监视文件放入红黑树，后续IO中断，回调处理buffer状态，复制到链表。[在java中懒加载，selector.select()才调用]
->   4. epoll_wait 程序调用，直接获取有状态fd的结果集。
->       - 读状态：read-q有数据就触发
->       - 写状态：send-q无数据就触发（所以要注意写状态监听注册时机） 
+>       1. epoll_ctl add：用于注册监听，del：用于注销监听，避免重复调起
+>   4. epoll_wait 程序调用，直接获取有状态fd的结果集。[使用完需要移除掉]
+>       - 读状态：recv-Q有数据就触发
+>       - 写状态：send-Q无数据就触发（所以要注意写状态监听注册时机） 
 
 ## blocking
 > - 实现流程：

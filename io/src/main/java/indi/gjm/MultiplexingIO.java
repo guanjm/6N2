@@ -40,6 +40,8 @@ public class MultiplexingIO {
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
                 while (iterator.hasNext()) {
                     SelectionKey selectionKey = iterator.next();
+                    //从结果集移除，否侧调用select依然存在
+                    iterator.remove();
                     if (selectionKey.isAcceptable()) {
                         ServerSocketChannel socketChannel = (ServerSocketChannel) selectionKey.channel();
                         SocketChannel channel = socketChannel.accept();
@@ -60,7 +62,6 @@ public class MultiplexingIO {
                             byteBuffer.clear();
                         }
                     }
-                    iterator.remove();
                 }
             }
             
