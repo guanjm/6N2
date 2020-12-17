@@ -20,38 +20,16 @@ public class Client {
         NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
         //4、channel注册到eventLoop
         eventLoopGroup.register(nioSocketChannel);
-        //5、创建管道
-        ChannelPipeline pipeline = nioSocketChannel.pipeline();
-        //6、添加处理器
-        pipeline.addLast(new ChannelHandler() {
-            @Override
-            public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-                System.out.println("handlerAdded");
-            }
-
-            @Override
-            public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-                System.out.println("handlerRemoved");
-            }
-
-            @Override
-            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                System.out.println("exceptionCaught");
-            }
-        });
+        //5、加入处理器
+        nioSocketChannel.pipeline().addLast(new MyHandle());
         //2、连接端口
-        ChannelFuture connect = nioSocketChannel.connect(new InetSocketAddress("10.73.40.26", 8001));
+        ChannelFuture connect = nioSocketChannel.connect(new InetSocketAddress( 8001));
 
-
-        //java.lang.UnsupportedOperationException: unsupported message type: String (expected: ByteBuf, FileRegion)
-//        ChannelFuture writeAndFlush = nioSocketChannel.writeAndFlush("123");
+        //写数据前，同步，确认已连接
+        connect.sync();
         ByteBuf byteBuf = ByteBufAllocator.DEFAULT.directBuffer(10);
-        ByteBuf byteBuf1 = byteBuf.writeBytes("123".getBytes());
-
-        ChannelFuture writeAndFlush = nioSocketChannel.writeAndFlush(byteBuf1);
-
-        ChannelFuture writeAndFlushSync = writeAndFlush.sync();
-        System.out.println("client write succ");
+        ByteBuf byteBuf1 = byteBuf.writeBytes("client connect succ！".getBytes());
+        nioSocketChannel.writeAndFlush(byteBuf1);
 
     }
 
