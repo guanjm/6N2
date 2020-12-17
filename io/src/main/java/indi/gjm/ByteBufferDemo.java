@@ -10,6 +10,12 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
+/**
+ * nio-字节数组
+ * @author : guanjm
+ * @date: 2020/12/17
+ *
+ */
 public class ByteBufferDemo {
 
     public static void main(String[] args) {

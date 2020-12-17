@@ -36,6 +36,7 @@ public class MultiplexingIO {
 
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
             while (true) {
+                //只会获取此时已注册监听的fd，其他线程或方法在调起后注册，此时的select观察不到，会造成永久阻塞（key.wakeup）
                 selector.select();
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
                 while (iterator.hasNext()) {

@@ -166,3 +166,13 @@
 >       - net.ipv4.tcp_tw_reuse = 0    是否可重用
 > - 客户端或者服务器都可以作为断开发起方
 > - 
+
+## selector.select() 和 selector.register()
+> java底层里会通过synchronized来锁住keySet，两个不同的线程同时调用可能会造成阻塞。
+> 因此，一个线程想往另外一个线程selector注册时，唯一的方案是让持有selector的线程自己注册
+> 可通过队列来通知selector持有者自己注册。
+
+## nio 和 netty
+> ByteBuf => ByteBuffer
+> Selector => EventLoopGroup
+> 
