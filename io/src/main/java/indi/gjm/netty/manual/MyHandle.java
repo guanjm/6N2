@@ -32,8 +32,7 @@ public class MyHandle extends ChannelInboundHandlerAdapter {
         } else if (msg instanceof ByteBuf) {
             ByteBuf byteBuf = (ByteBuf) msg;
             CharSequence charSequence = byteBuf.getCharSequence(byteBuf.readerIndex(), byteBuf.readableBytes(), CharsetUtil.UTF_8);
-            System.out.println(charSequence);
-            ctx.channel().writeAndFlush(byteBuf);
+            System.out.println("read: " + charSequence);
         }
     }
 

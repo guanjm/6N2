@@ -21,7 +21,7 @@ public class Client {
         //4、channel注册到eventLoop
         eventLoopGroup.register(nioSocketChannel);
         //2、连接端口
-        ChannelFuture connect = nioSocketChannel.connect(new InetSocketAddress("10.73.40.26", 8001));
+        ChannelFuture connect = nioSocketChannel.connect(new InetSocketAddress(8001));
 
         connect.sync();
         System.out.println("client connect success");
