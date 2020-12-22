@@ -1,36 +1,35 @@
-package indi.gjm.rpc.manual;
+package indi.gjm.rpc.manual.protocol;
 
-import java.io.Serializable;
+import java.util.UUID;
 
-/**
- *
- * @author : guanjm
- * @date: 2020/12/21
- *
- */
-public class MyRequest implements Serializable {
+public class MyRequest extends MyHeader {
 
-    private String interfaceName;
+    //类名
+    private String className;
 
+    //方法名
     private String methodName;
 
+    //参数类型
     private Class<?>[] parameterTypes;
 
+    //实际参数
     private Object[] args;
 
-    public MyRequest(String interfaceName, String methodName, Class<?>[] parameterTypes, Object[] args) {
-        this.interfaceName = interfaceName;
+    public MyRequest(String className, String methodName, Class<?>[] parameterTypes, Object[] args) {
+        this.id = UUID.randomUUID().toString();
+        this.className = className;
         this.methodName = methodName;
         this.parameterTypes = parameterTypes;
         this.args = args;
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public String getClassName() {
+        return className;
     }
 
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public String getMethodName() {
@@ -56,4 +55,5 @@ public class MyRequest implements Serializable {
     public void setArgs(Object[] args) {
         this.args = args;
     }
+
 }
