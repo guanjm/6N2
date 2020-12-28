@@ -11,7 +11,6 @@ public class MyRpc {
      */
     public static Object invoke(byte[] encodeData) {
         //获取连接
-
         return null;
     }
 

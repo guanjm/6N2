@@ -1,6 +1,8 @@
 package indi.gjm.rpc.manual.protocol;
 
-public class MyHeader {
+import java.io.Serializable;
+
+public class MyHeader implements Serializable {
 
     //传输id
     String id;

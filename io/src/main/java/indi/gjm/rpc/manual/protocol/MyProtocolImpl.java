@@ -19,11 +19,11 @@ public class MyProtocolImpl {
     //当前协议名称
     public static final String NAME = "gjm1";
 
-    //当前协议标识
-    private static final byte[] FLAG_BYTES = NAME.getBytes();
+    //当前协议标识记录字节数
+    private static final int FLAG_BYTE_SIZE = 4;
 
-    //当前协议数据体最大长度
-    private static final long MAX_LENGTH = 1L << (8 * 4);
+    //当前协议数据包长度记录字节数
+    private static final int DATA_LENGTH_BYTE_SIZE = 4;
 
     public static <T> T getObject(Class<T> clazz) {
         return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
@@ -43,26 +43,25 @@ public class MyProtocolImpl {
     /**
      * 协议编码
      * 当前协议组成：
-     *  1、协议标识(flag_bytes)，占用4byte
-     *      {@link indi.gjm.rpc.manual.protocol.MyProtocol.FLAG_BYTES}
-     *  2、数据包长度(length_bytes)，占用4byte
-     *      {@link indi.gjm.rpc.manual.protocol.MyProtocol.MAX_LENGTH}
-     *  3、数据体(data_bytes)，通过javaObject序列化
+     *  1、协议标识(flag)，占用4byte
+     *      {@link indi.gjm.rpc.manual.protocol.MyProtocolImpl.FLAG_BYTE_SIZE}
+     *  2、数据包长度(data_length)，占用4byte
+     *      {@link indi.gjm.rpc.manual.protocol.MyProtocolImpl.DATA_LENGTH_BYTE_SIZE}
+     *  3、数据体(data)，通过javaObject序列化
      * @author : guanjm
      * @date: 2020/12/22
      * @param myRequest     数据体
      *
      */
     public static byte[] encode(MyRequest myRequest) {
-        byte[] dataBytes = ByteArrayUtil.turnJavaObject(myRequest);
-        long bodyLength = dataBytes.length;
-        //数据体过大，抛弃异常
-        if (bodyLength > MAX_LENGTH) {
-            throw new RuntimeException("request data too large!!");
-        }
-        //数据体长度转byte
-        byte[] lengthBytes = ByteArrayUtil.turnByteArray(bodyLength);
-        ByteBuf byteBuf = Unpooled.copiedBuffer(FLAG_BYTES, lengthBytes, dataBytes);
+        //编码数据体
+        byte[] dataByteArray = ByteArrayUtil.turnJavaObject(myRequest);
+        ByteBuf flagBytes = Unpooled.copiedBuffer(NAME.getBytes(),
+                0, FLAG_BYTE_SIZE);
+        ByteBuf dataLengthBytes = Unpooled.copiedBuffer(ByteArrayUtil.turnByteArray(dataByteArray.length),
+                0, DATA_LENGTH_BYTE_SIZE);
+        ByteBuf dataBytes = Unpooled.copiedBuffer(dataByteArray);
+        ByteBuf byteBuf = Unpooled.copiedBuffer(flagBytes, dataLengthBytes, dataBytes);
         return byteBuf.array();
     }
 
