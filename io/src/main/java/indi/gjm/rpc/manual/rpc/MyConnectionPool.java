@@ -1,8 +1,9 @@
 package indi.gjm.rpc.manual.rpc;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -61,6 +62,7 @@ public class MyConnectionPool {
                 .channel(NioSocketChannel.class)
                 .connect(new InetSocketAddress(host, port)).sync();
         SocketChannel channel = (SocketChannel) connect.channel();
+        System.out.println("create connect address: "+channel.localAddress());
         return new MyConnection(MyConnection.State.ACTIVE, channel);
     }
 
@@ -88,6 +90,7 @@ public class MyConnectionPool {
                 if (myConnections.size() < maxSize) {
                     MyConnection myConnection = createConnection(protocol);
                     myConnection.setState(MyConnection.State.WORKING);
+                    myConnections.add(myConnection);
                     return myConnection;
                     //当连接池数量达到最大值，等待
                 } else {

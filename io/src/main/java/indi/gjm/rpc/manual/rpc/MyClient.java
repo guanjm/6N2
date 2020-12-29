@@ -6,9 +6,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 
-import java.util.concurrent.locks.LockSupport;
-import java.util.concurrent.locks.ReentrantLock;
-
 public class MyClient {
 
     private static MyConnectionPool connectionPool;
@@ -36,6 +33,7 @@ public class MyClient {
             //获取连接
             connection = getConnectionPool().getConnection(protocol);
             SocketChannel socketChannel = connection.getSocketChannel();
+            System.out.println("get connect address: " + socketChannel.localAddress());
             ChannelPipeline pipeline = socketChannel.pipeline();
             MyHandlerForClient handler = new MyHandlerForClient();
             //添加处理器
