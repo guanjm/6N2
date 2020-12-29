@@ -37,6 +37,7 @@ public class MyServer {
 }
 
 class MyHandlerForServer extends ChannelInboundHandlerAdapter {
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Channel channel = ctx.channel();
@@ -47,8 +48,10 @@ class MyHandlerForServer extends ChannelInboundHandlerAdapter {
             MyResponse myResponse = new MyResponse();
             myResponse.setId(myRequest.getId());
             myResponse.setData(myRequest.getArgs()[0]);
+            System.out.println(myResponse.getData());
             ByteBuf encode = MyProtocolImpl.encode(myResponse);
             channel.writeAndFlush(encode);
         }
     }
+
 }

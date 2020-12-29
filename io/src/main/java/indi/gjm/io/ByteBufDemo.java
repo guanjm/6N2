@@ -1,4 +1,4 @@
-package indi.gjm;
+package indi.gjm.io;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;

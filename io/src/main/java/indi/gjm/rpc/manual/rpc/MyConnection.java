@@ -1,6 +1,12 @@
 package indi.gjm.rpc.manual.rpc;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.socket.SocketChannel;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * 连接工厂
@@ -19,6 +25,10 @@ public class MyConnection {
 
     private SocketChannel socketChannel;
 
+    private ByteBuf byteBuf;
+
+    private Set<ChannelHandler> handlers = new LinkedHashSet<>();
+
     public MyConnection(State state, SocketChannel socketChannel) {
         this.state = state;
         this.socketChannel = socketChannel;
@@ -32,12 +42,36 @@ public class MyConnection {
         this.state = state;
     }
 
-    public SocketChannel getSocketChannel() {
-        return socketChannel;
+    public ByteBuf getByteBuf() {
+        return byteBuf;
     }
 
-    public void setSocketChannel(SocketChannel socketChannel) {
-        this.socketChannel = socketChannel;
+    public void setByteBuf(ByteBuf byteBuf) {
+        this.byteBuf = byteBuf;
+    }
+
+    public void addHandler(ChannelHandler channelHandler) {
+        handlers.add(channelHandler);
+        socketChannel.pipeline().addLast(channelHandler);
+    }
+
+    public void removeHandle() {
+        for (ChannelHandler handler : handlers) {
+            socketChannel.pipeline().remove(handler);
+        }
+    }
+
+    public ChannelFuture write(ByteBuf data) throws InterruptedException {
+        return socketChannel.writeAndFlush(data).sync();
+    }
+
+    public ByteBuf read() throws InterruptedException {
+        synchronized (this){
+            while (byteBuf == null) {
+                wait();
+            }
+            return byteBuf;
+        }
     }
 
 }

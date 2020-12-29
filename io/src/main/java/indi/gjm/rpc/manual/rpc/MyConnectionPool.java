@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 连接池
@@ -21,6 +22,9 @@ import java.util.Map;
  *
  */
 public class MyConnectionPool {
+
+    AtomicInteger wait = new AtomicInteger(0);
+    AtomicInteger notify = new AtomicInteger(0);
 
     //连接地址
     private final String host;
@@ -62,7 +66,7 @@ public class MyConnectionPool {
                 .channel(NioSocketChannel.class)
                 .connect(new InetSocketAddress(host, port)).sync();
         SocketChannel channel = (SocketChannel) connect.channel();
-        System.out.println("create connect address: "+channel.localAddress());
+//        System.out.println("create connect address: "+channel.localAddress());
         return new MyConnection(MyConnection.State.ACTIVE, channel);
     }
 
@@ -74,14 +78,13 @@ public class MyConnectionPool {
      *
      */
     public MyConnection getConnection(String protocol) throws InterruptedException {
-        synchronized (lock) {
-            //获取连接池
-            List<MyConnection> myConnections = connectionPool.computeIfAbsent(protocol, key -> new ArrayList<>(maxSize));
-            while (true) {
+        while (true) {
+            synchronized (lock) {
+                //获取连接池
+                List<MyConnection> myConnections = connectionPool.computeIfAbsent(protocol, key -> new ArrayList<>(maxSize));
                 //从连接池获取有效的连接
                 for (MyConnection myConnection : myConnections) {
-                    if (MyConnection.State.ACTIVE.equals(myConnection.getState())
-                            && myConnection.getSocketChannel().isActive()) {
+                    if (MyConnection.State.ACTIVE.equals(myConnection.getState())) {
                         myConnection.setState(MyConnection.State.WORKING);
                         return myConnection;
                     }
@@ -95,6 +98,7 @@ public class MyConnectionPool {
                     //当连接池数量达到最大值，等待
                 } else {
                     lock.wait();
+                    System.out.println("wait: " + wait.incrementAndGet());
                 }
             }
         }
@@ -109,8 +113,11 @@ public class MyConnectionPool {
     public void releaseConnection(MyConnection myConnection) {
         synchronized (lock) {
             if (myConnection != null) {
+                myConnection.removeHandle();
                 myConnection.setState(MyConnection.State.ACTIVE);
+                myConnection.setByteBuf(null);
                 lock.notifyAll();
+                System.out.println("notify: " + notify.incrementAndGet());
             }
         }
     }

@@ -1,4 +1,4 @@
-package indi.gjm;
+package indi.gjm.io;
 
 import java.io.IOException;
 import java.io.OutputStream;

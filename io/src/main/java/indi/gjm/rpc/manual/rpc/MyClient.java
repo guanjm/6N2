@@ -20,30 +20,25 @@ public class MyClient {
     }
 
     /**
-     * 远程调用
+     * 远程调用（阻塞）
      * @author : guanjm
      * @date: 2020/12/22
      * @param protocol      协议
      * @param data          数据包
      *
      */
-    public static ByteBuf invoke(String protocol, ByteBuf data) {
+    public static ByteBuf invokeBlocking(String protocol, ByteBuf data) {
         MyConnection connection = null;
         try {
             //获取连接
             connection = getConnectionPool().getConnection(protocol);
-            SocketChannel socketChannel = connection.getSocketChannel();
-            System.out.println("get connect address: " + socketChannel.localAddress());
-            ChannelPipeline pipeline = socketChannel.pipeline();
-            MyHandlerForClient handler = new MyHandlerForClient();
             //添加处理器
-            pipeline.addLast(handler);
+            connection.addHandler(new MyHandlerForClientBlocking(connection));
             //发送
-            socketChannel.writeAndFlush(data).sync();
-            Object response = handler.getResponse();
-            //移除处理器
-            pipeline.remove(handler);
-            return (ByteBuf) response;
+            connection.write(data);
+            //读取
+//            return connection.read();
+            return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -52,29 +47,25 @@ public class MyClient {
         }
     }
 
+
 }
 
-class MyHandlerForClient extends ChannelInboundHandlerAdapter {
+class MyHandlerForClientBlocking extends ChannelInboundHandlerAdapter {
 
-    final byte[] lock = new byte[0];
-    private ByteBuf byteBuf;
+    private final MyConnection connection;
+
+    public MyHandlerForClientBlocking(MyConnection connection) {
+        this.connection = connection;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        synchronized (lock) {
+        synchronized (connection) {
             if (msg instanceof ByteBuf) {
-                byteBuf = (ByteBuf) msg;
-                lock.notifyAll();
+                connection.setByteBuf((ByteBuf) msg);
+                connection.notifyAll();
             }
         }
     }
 
-    Object getResponse() throws InterruptedException {
-        synchronized (lock) {
-            while (byteBuf == null) {
-                lock.wait();
-            }
-            return byteBuf;
-        }
-    }
 }
