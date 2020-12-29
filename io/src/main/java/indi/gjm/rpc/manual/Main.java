@@ -9,7 +9,8 @@ public class Main {
         //获取代理
         MyInterface myInterface = MyProxy.getObject(MyProtocolImpl.NAME, MyInterface.class);
         //通过代理类调用方法
-        myInterface.print("hello world");
+        String result = myInterface.print("hello world");
+        System.out.println(result);
     }
 
 }

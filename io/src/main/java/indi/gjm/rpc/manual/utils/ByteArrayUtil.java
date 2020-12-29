@@ -40,19 +40,44 @@ public class ByteArrayUtil {
     }
 
     /**
-     * Long转byte[]
+     * java基础封装类转byte[]
      * @author : guanjm
      * @date: 2020/12/22
      *
      */
-    public static byte[] turnByteArray(long l) {
+    public static byte[] javaDataTurn(Object data) {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
              DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream)) {
-            dataOutputStream.writeLong(l);
+            if (data instanceof Long) {
+                dataOutputStream.writeLong((Long)data);
+            } else if (data instanceof Integer) {
+                dataOutputStream.writeInt((Integer)data);
+            }
             return byteArrayOutputStream.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * byte[]转java基础封装类
+     * @author : guanjm
+     * @date: 2020/12/29
+     *
+     */
+    public static <T> T turnJavaData(byte[] bytes, Class<T> clazz) {
+        Object result = null;
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+             DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream)) {
+            if (Long.class == clazz) {
+                result = dataInputStream.readLong();
+            } else if (Integer.class == clazz) {
+                result = dataInputStream.readInt();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return (T) result;
     }
 
 }

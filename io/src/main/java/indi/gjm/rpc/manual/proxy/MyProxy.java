@@ -24,7 +24,7 @@ public class MyProxy {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return null;
+        throw new RuntimeException("get proxy object fail");
     }
 
 }
