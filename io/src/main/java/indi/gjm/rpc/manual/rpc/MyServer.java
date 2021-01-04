@@ -13,6 +13,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  *
  * @author : guanjm
@@ -38,19 +40,25 @@ public class MyServer {
 
 class MyHandlerForServer extends ChannelInboundHandlerAdapter {
 
+    private static AtomicInteger count = new AtomicInteger(0);
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Channel channel = ctx.channel();
         if (msg instanceof ByteBuf) {
-            ByteBuf byteBuf = (ByteBuf) msg;
-            //请求内容
-            MyRequest myRequest = (MyRequest) MyProtocolImpl.decode(byteBuf);
-            MyResponse myResponse = new MyResponse();
-            myResponse.setId(myRequest.getId());
-            myResponse.setData(myRequest.getArgs()[0]);
-            System.out.println(myResponse.getData());
-            ByteBuf encode = MyProtocolImpl.encode(myResponse);
-            channel.writeAndFlush(encode);
+            try {
+                ByteBuf byteBuf = (ByteBuf) msg;
+                //请求内容
+                MyRequest myRequest = (MyRequest) MyProtocolImpl.decode(byteBuf);
+                MyResponse myResponse = new MyResponse();
+                myResponse.setId(myRequest.getId());
+                myResponse.setData(myRequest.getArgs()[0]);
+                System.out.println(count.incrementAndGet() + ": " + myRequest.getId());
+                ByteBuf encode = MyProtocolImpl.encode(myResponse);
+                channel.writeAndFlush(encode);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
         }
     }
 

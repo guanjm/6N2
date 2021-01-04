@@ -98,7 +98,7 @@ public class MyConnectionPool {
                     //当连接池数量达到最大值，等待
                 } else {
                     lock.wait();
-                    System.out.println("wait: " + wait.incrementAndGet());
+//                    System.out.println("wait: " + wait.incrementAndGet());
                 }
             }
         }
@@ -117,7 +117,7 @@ public class MyConnectionPool {
                 myConnection.setState(MyConnection.State.ACTIVE);
                 myConnection.setByteBuf(null);
                 lock.notifyAll();
-                System.out.println("notify: " + notify.incrementAndGet());
+//                System.out.println("notify: " + notify.incrementAndGet());
             }
         }
     }

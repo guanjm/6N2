@@ -16,8 +16,8 @@ public class Main {
         ExecutorService executorService = Executors.newFixedThreadPool(100);
         for (int i = 0; i < 10000; i++) {
             //通过代理类调用方法
-            executorService.submit(() -> System.out.println(count.incrementAndGet() + ": " + myInterface.print("hello world")));
-//            executorService.submit(() -> myInterface.print("hello world"));
+//            executorService.submit(() -> System.out.println(count.incrementAndGet() + ": " + myInterface.print("hello world")));
+            executorService.submit(() -> myInterface.print("hello world"));
         }
     }
 

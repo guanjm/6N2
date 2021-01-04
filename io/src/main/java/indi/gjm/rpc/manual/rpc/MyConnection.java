@@ -5,8 +5,10 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.socket.SocketChannel;
 
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * 连接工厂
@@ -56,8 +58,11 @@ public class MyConnection {
     }
 
     public void removeHandle() {
-        for (ChannelHandler handler : handlers) {
+        Iterator<ChannelHandler> iterator = handlers.iterator();
+        while (iterator.hasNext()) {
+            ChannelHandler handler = iterator.next();
             socketChannel.pipeline().remove(handler);
+            iterator.remove();
         }
     }
 
@@ -65,7 +70,7 @@ public class MyConnection {
         return socketChannel.writeAndFlush(data).sync();
     }
 
-    public ByteBuf read() throws InterruptedException {
+    public ByteBuf readBlocking() throws InterruptedException {
         synchronized (this){
             while (byteBuf == null) {
                 wait();
