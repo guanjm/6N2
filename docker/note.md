@@ -42,6 +42,8 @@
 >   - docker run [镜像名]<:tag> **创建容器，启动容器**
 >       - -p [宿主机端口]:[容器端口]
 >       - -d 后台运行
+>       - --name [容器名称] **定义容器名称**
+>       - --link [容器名称] **关联其他容器，后面可直接通过该容器名称直接访问**
 >   - docker ps **查看正在运行中的容器**
 >       - -a 显示全部
 >   - docker create [镜像名]<:tag> **创建容器**
@@ -57,8 +59,11 @@
 >       - -it 采用交互方式执行命令
 >   - docker build [dockerfile目录]
 >       - t [镜像名]<:tag> 定义镜像名
+>   - docker inspect [容器id] **显示容器信息**
+>   - docker network [option] **docker网络服务**
 >
 >   PS：当容器遇到异常（例如：oom）会进入停止状态，根据策略来决定是否需要重新启动容器
+>       某些容器启动后会自动退出，可通过加上-it /bin/bash 保持运行
 
 # dockerfile镜像描述文件
 >   ```
@@ -97,6 +102,7 @@
 > - COPY [源文件] [目标目录] 复制文件
 > - ADD [源文件] [目标目录] **1、支持源文件的解压，2、支持远程文件，但不支持远程文件解压**
 > - ENV [key]=[value] [key]=[value] 设置环境常量
+> - EXPOSE [端口/协议] 暴露接口
 >   ```
 >       ENV JAVA_HOME /usr/local/openjdk8
 >       RUN ${JAVA_HOME}/bin/java -jar test.jar
@@ -132,3 +138,13 @@
 >   ENTRYPOINT ["echo"]
 > 
 > ```
+
+#  docker容器间通信
+> - 单向通信
+>   - docker虚拟ip
+>       - 通过```docker inspect [通信目标dockerId]```命令，可获取docker间虚拟ip
+>   - docker名
+>       - 通过```docker run --link [通信目标docker名称]```命令，配置可直接访问docker名
+> - 双向通信
+>   - 网桥
+>       - docker network ls
