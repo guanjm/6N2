@@ -40,8 +40,9 @@
 >   - docker pull [镜像名]<:tag> **从远程仓库抽取镜像，不加tags默认下载最新版本，[docker镜像官方地址](hub.docker.com)**
 >   - docker images **查看本地镜像**
 >   - docker run [镜像名]<:tag> **创建容器，启动容器**
->       - -p [宿主机端口]:[容器端口]
+>       - -p [宿主机端口]:[容器端口] 端口映射
 >       - -d 后台运行
+>       - -v [宿主机路径]:[容器内挂载路径] 挂载目录
 >       - --name [容器名称] **定义容器名称**
 >       - --link [容器名称] **关联其他容器，后面可直接通过该容器名称直接访问**
 >   - docker ps **查看正在运行中的容器**
@@ -57,6 +58,7 @@
 >   - docker rmi <-f> [镜像名]<:tags> **删除镜像**
 >   - docker exec [容器id] [命令]
 >       - -it 采用交互方式执行命令
+>       - PS：进入容器后，可通过exit命令退出容器。当失败时，可先通过ctrl+c，再执行exit
 >   - docker build [dockerfile目录]
 >       - t [镜像名]<:tag> 定义镜像名
 >   - docker inspect [容器id] **显示容器信息**
@@ -101,7 +103,9 @@
 > - WORKDIR [工作目录] 设置工作目录 **1、功能类型cd命令，2、当目录不存在时，会自动创建**
 > - COPY [源文件] [目标目录] 复制文件
 > - ADD [源文件] [目标目录] **1、支持源文件的解压，2、支持远程文件，但不支持远程文件解压**
-> - ENV [key]=[value] [key]=[value] 设置环境常量
+> - ENV [key]=[value] [key]=[value] 设置环境变量
+> - ARG [key]=[value] 镜像构建时环境变量
+> - VOLUME ["容器挂载路径", "容器挂载路径"] **无法直接指定宿主机上具体目录，自动在宿主机上生成目录（很鸡肋。）**
 > - EXPOSE [端口/协议] 暴露接口
 >   ```
 >       ENV JAVA_HOME /usr/local/openjdk8
@@ -125,6 +129,7 @@
 >   - PS:
 >       - 当有多条命令时，只会执行最后的命令
 >       - 启动容器时的命令参数可获取
+> PS: 可通过&&连接命令减少镜像层数
 > ```
 >   #shell命令格式[使用子进程]
 >   [RUN/CMD/ENTRYPOINT] yum install -y vim
@@ -146,5 +151,27 @@
 >   - docker名
 >       - 通过```docker run --link [通信目标docker名称]```命令，配置可直接访问docker名
 > - 双向通信
->   - 网桥
->       - docker network ls
+>   - 网桥（建立了一个虚拟网卡）
+>       - docker network ls 查看docker网络服务
+>       - docker network create -d [网络类型] [网桥名称] 创建网桥
+>       - docker network connect [网桥名称] [容器名称] 容器绑定网桥
+
+# docker容器间共享数据
+> - run -v参数
+>    ```
+>       docker run -v [宿主机路径]:[容器内挂载路径]
+>    ```
+> - run --volumes-from参数（推荐方案）
+>   - 创建共享容器
+>       ```
+>           docker create --name [共享容器名] -v [宿主机路径]:[容器内挂载路径]
+>       ```
+>   - 共享容器挂载点（复制共享容器的挂载信息）
+>       ```
+>           docker run --volumes-from [共享容器名]
+>       ```
+
+# docker compose（容器编排工具）
+> - 单机多容器（不能部署集群）
+> - 通过yml文件定义
+> 

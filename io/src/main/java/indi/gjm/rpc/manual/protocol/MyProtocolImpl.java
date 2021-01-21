@@ -46,7 +46,8 @@ public class MyProtocolImpl {
                     //编码
                     ByteBuf encodeData = encode(myRequest);
                     //远程调用
-                    ByteBuf response = MyClient.invokeNonBlocking(NAME, encodeData);
+                    ByteBuf response = MyClient.invokeBlocking(NAME, encodeData);
+//                    ByteBuf response = MyClient.invokeNonBlocking(NAME, encodeData);
                     //解码
                     MyResponse decodeData = (MyResponse)decode(response);
                     return decodeData.getData();
