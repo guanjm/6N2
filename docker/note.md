@@ -34,3 +34,101 @@
 >           REST API
 >           docker daemon(server)
 >       ```
+>   - container、image、register
+
+# docker常用命令
+>   - docker pull [镜像名]<:tag> **从远程仓库抽取镜像，不加tags默认下载最新版本，[docker镜像官方地址](hub.docker.com)**
+>   - docker images **查看本地镜像**
+>   - docker run [镜像名]<:tag> **创建容器，启动容器**
+>       - -p [宿主机端口]:[容器端口]
+>       - -d 后台运行
+>   - docker ps **查看正在运行中的容器**
+>       - -a 显示全部
+>   - docker create [镜像名]<:tag> **创建容器**
+>   - docker start [容器id] **启动容器**
+>   - docker restart [容器id] **重启容器**
+>   - docker stop [容器id] **停止容器，先发SIGTERM，在规定时间内还未结束再发SIGKILL**
+>   - docker kill [容器id] **杀死容器，直接发起SIGKILL**
+>   - docker pause [容器id] **暂停容器，资源临时挂起**
+>   - docker unpause [容器id] **恢复容器**
+>   - docker rm <-f> [容器id] **删除容器**
+>   - docker rmi <-f> [镜像名]<:tags> **删除镜像**
+>   - docker exec [容器id] [命令]
+>       - -it 采用交互方式执行命令
+>   - docker build [dockerfile目录]
+>       - t [镜像名]<:tag> 定义镜像名
+>
+>   PS：当容器遇到异常（例如：oom）会进入停止状态，根据策略来决定是否需要重新启动容器
+
+# dockerfile镜像描述文件
+>   ```
+>       FROM [基准镜像]
+>       MAINTAINER [维护人/组织]
+>       WORKDIR [工作目录]
+>       ADD [源文件] [镜像目标目录]
+>       ADD [目录（目录里的内容，不包含目录）] [镜像目标目录]
+>       
+>   ```
+
+# 镜像分层
+```
+   Step 1/4 : FROM tomcat
+    ---> 040bdb29ab37
+   Step 2/4 : MAINTAINER gjm
+    ---> Using cache
+    ---> acdaeb797865
+   Step 3/4 : WORKDIR /usr/local/tomcat/webapps
+    ---> Using cache
+    ---> 99e7be3eb1b6
+   Step 4/4 : ADD docker1 ./docker1
+    ---> 9720a901bc2e
+   Successfully built 9720a901bc2e
+```
+> 在构建docker镜像时，可看到每执行一步命令都会有一个id，这个id是docker的临时容器id。  
+> 这个临时容器只会用于镜像的构建，而不能用于启动或其他功能。
+> 每个id都为一个临时容器，所以每步命令都会生成一个临时容器，不过当有相同的命令时，会using cache。
+
+# dockerfile基础命令
+> - FROM [镜像名] 基于基准镜像 **必须为第一个命令**
+>   - FROM scratch 不依赖任何基准镜像
+> - MAINTAINER [个人/组织] 说明信息（维护人/维护组织）
+> - LABEL [key]=[value] [key]=[value]
+> - WORKDIR [工作目录] 设置工作目录 **1、功能类型cd命令，2、当目录不存在时，会自动创建**
+> - COPY [源文件] [目标目录] 复制文件
+> - ADD [源文件] [目标目录] **1、支持源文件的解压，2、支持远程文件，但不支持远程文件解压**
+> - ENV [key]=[value] [key]=[value] 设置环境常量
+>   ```
+>       ENV JAVA_HOME /usr/local/openjdk8
+>       RUN ${JAVA_HOME}/bin/java -jar test.jar
+>   ```
+> PS:需要使用空格时，可通过\来进行转义
+
+# dockerfile执行命令
+> - RUN 
+>   - 镜像构建执行命令 
+>   - docker build阶段
+> - CMD 
+>   - 容器启动时执行命令 
+>   - docker create阶段
+>   - PS:
+>       - 当有多条命令时，只会执行最后的命令
+>       - 如果容器启动时附加命令，则CMD不执行
+> - ENTRYPOINT 
+>   - 容器启动后执行命令 
+>   - docker create阶段
+>   - PS:
+>       - 当有多条命令时，只会执行最后的命令
+>       - 启动容器时的命令参数可获取
+> ```
+>   #shell命令格式[使用子进程]
+>   [RUN/CMD/ENTRYPOINT] yum install -y vim
+>     
+>   #exec命令格式[替换当前进程，推荐]
+>   [RUN/CMD/ENTRYPOINT] ["yum","install","-y", "vim"] 
+> 
+>   FROM centos
+>   RUN ["echo","build image"]
+>   CMD ["run container"]
+>   ENTRYPOINT ["echo"]
+> 
+> ```
