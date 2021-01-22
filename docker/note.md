@@ -64,8 +64,9 @@
 >   - docker inspect [容器id] **显示容器信息**
 >   - docker network [option] **docker网络服务**
 >
->   PS：当容器遇到异常（例如：oom）会进入停止状态，根据策略来决定是否需要重新启动容器
->       某些容器启动后会自动退出，可通过加上-it /bin/bash 保持运行
+>   PS
+>   - 当容器遇到异常（例如：oom）会进入停止状态，根据策略来决定是否需要重新启动容器
+>   - 某些容器启动后会自动退出，可通过加上-it /bin/bash 保持运行
 
 # dockerfile镜像描述文件
 >   ```
@@ -78,22 +79,26 @@
 >   ```
 
 # 镜像分层
-```
-   Step 1/4 : FROM tomcat
-    ---> 040bdb29ab37
-   Step 2/4 : MAINTAINER gjm
-    ---> Using cache
-    ---> acdaeb797865
-   Step 3/4 : WORKDIR /usr/local/tomcat/webapps
-    ---> Using cache
-    ---> 99e7be3eb1b6
-   Step 4/4 : ADD docker1 ./docker1
-    ---> 9720a901bc2e
-   Successfully built 9720a901bc2e
-```
-> 在构建docker镜像时，可看到每执行一步命令都会有一个id，这个id是docker的临时容器id。  
-> 这个临时容器只会用于镜像的构建，而不能用于启动或其他功能。
-> 每个id都为一个临时容器，所以每步命令都会生成一个临时容器，不过当有相同的命令时，会using cache。
+> ```
+>    Step 1/4 : FROM tomcat
+>     ---> 040bdb29ab37
+>    Step 2/4 : MAINTAINER gjm
+>     ---> Using cache
+>     ---> acdaeb797865
+>    Step 3/4 : WORKDIR /usr/local/tomcat/webapps
+>     ---> Using cache
+>     ---> 99e7be3eb1b6
+>    Step 4/4 : ADD docker1 ./docker1
+>     ---> 9720a901bc2e
+>    Successfully built 9720a901bc2e
+> ```
+> ![alt docker分层](/docker/resource/docker_layer.jpg)
+> 在构建docker镜像时，可看到每执行一步命令都会有一个id，这个id是docker的临时镜像id。    
+> 这个临时镜像只会用于镜像的构建，而不能用于启动或其他功能。  
+> 每个id都为一个临时镜像，所以每步命令都会生成一个临时镜像（只读层），不过当有相同的命令时，会using cache。  
+> 每层只记录本层所做的更改，而这些层都是只读层。当你启动一个容器，Docker会在最顶部添加读写层，你在容器内做的所有更改，如写日志、修改、删除文件等，都保存到了读写层内，一般称该层为容器层。    
+> 所有对容器的修改都发生在此层，镜像并不会被修改，也即前面说的 COW(copy-on-write)技术。容器需要读取某个文件时，从上到下找，而如果需要修改某文件，则将该文件拷贝到顶部读写层进行修改，只读层保持不变。
+> 
 
 # dockerfile基础命令
 > - FROM [镜像名] 基于基准镜像 **必须为第一个命令**
