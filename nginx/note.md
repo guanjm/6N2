@@ -7,7 +7,8 @@
 >   - worker_connections [count]  **单个worker进程最大并发连接数**  
 > 6. http {}
 >   - include [filePath]  **导入其他配置文件**
->   - default_type [contentType]  **内容类型**
+>   - include mime.types  **导入mime配置文件，用于浏览器识别**
+>   - default_type [contentType]  **默认的内容类型[application/octet-stream（下载）]**
 >   - log_format main [日志格式]  **设定日志**
 >   - access_log [filePath]  **访问日志**
 >   - rewrite_log [on/off]  **重写日志**
