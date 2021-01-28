@@ -14,17 +14,22 @@
 >   - rewrite_log [on/off]  **重写日志**
 >   - sendfile [on/off]  **是否调用sendfile函数（zero copy方式）来输出文件**
 >       - on 用来进行下载等应用磁盘io负载应用
+>           - 磁盘io：直接通知内核去把文件复制到网卡，减少经过程序内存拷贝
+>           - 网络io：异步网络io，发送文件速度很快（当下游性能不足时，存在下游消费不及时，数据被抛弃：图片加载到一般）
 >       - off 平衡磁盘和网络IO处理速度，降低系统的uptime
 >   - keepalive_timeout [second]  **连接超时时间**
+>   - tcp_nopush [on/off]  **tcp流处理，优化tcp传输**
 >   - tcp_nodelay [on/off]
->   - gzip [on/off] **gzip压缩**
->   - gzip_types [content-type] **gzip压缩类型**
->   - gzip_vary [on/off]  ****
+>   - gzip [on/off] **gzip压缩，（html，js空格，减少网络带宽），需要浏览器和服务器支持**
+>   - gzip_min_length [size] **超过这个大小才开启压缩**
+>   - gzip_comp_level [level] 1-10  **压缩级别，越大压缩越好，同时越消耗cpu**
+>   - gzip_types [content-type] **gzip压缩目标类型**
+>   - gzip_vary [on/off]  **给CDN和代理服务器使用**
 >   - upstream [serverName] {}  **设定实际服务器列表**
 >       - server [ip:port] [weight]=[number]  **weigth权重**
->   - server {}  **http服务器**
+>   - server {}  **虚拟主机**
 >       - listen [port]  **监听端口**
->       - server_name [hostname]  **http服务器访问名**
+>       - server_name [hostname]  **虚拟主机访问名**
 >       - index [filePath(.html)]  **首页访问路径**
 >       - root [fileDir]  **webapp目录**
 >       - charset [charsetType]  **字符集类型**
@@ -40,9 +45,10 @@
 >       - proxy_set_header [key] [value]  **代理头部设置**
 >           - Host $host;
 >           - X-Forwarder-For $remote_addr
->       - location [regexp] {}
+>       - location [regexp] {}  **虚拟目录**
 >           - proxy_pass [url]  **反向代理-反向代理路径，可配置upstream**
->           - root [fileDir]  **静态文件-静态文件目录**
+>           - root [fileDir]  **静态文件-静态文件根目录**
+>           - index [filePath]  **静态文件-默认访问页面**
 >           - expires [times]  **静态文件-静态文件过期时间**
 >           - stub_status [on/off]  ****
 >           - access_log  [on/off]  ****
