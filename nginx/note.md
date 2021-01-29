@@ -1,3 +1,17 @@
+# nginx功能
+> - http服务器
+> - 代理功能
+> - 负载均衡
+> - URL hash
+> - 节省ip地址
+> - 软防火墙
+
+# 反向&正向代理
+> - 正向代理
+>   - 目标端（服务器） 通过服务器 代理访问所要资源
+> - 反向代理
+>   - 目标端（服务器） 通过服务器 代理接收或响应所要请求
+
 # nginx.conf
 > 1. user [userName] [groupName]  **指定运行用户或者用户组**  
 > 2. worker_processes [count]  **worker进程数，通常与CPU的数量相同**  
@@ -45,8 +59,20 @@
 >       - proxy_set_header [key] [value]  **代理头部设置**
 >           - Host $host;
 >           - X-Forwarder-For $remote_addr
->       - location [regexp] {}  **虚拟目录**
+>       - location [regexp] {}  **虚拟目录，多个location时，会优先匹配regexp更进准匹配的location，不按location编写顺序**
 >           - proxy_pass [url]  **反向代理-反向代理路径，可配置upstream**
+>               - 当代理外部链接时，有可能出现302，导致客户端直接302重定向，nginx无法真实代理请求数据
+>                ```
+>                 location / {
+>                      proxy_pass http://127.0.0.1:8081;
+>                      proxy_intercept_errors on;
+>                      error_page 301 302 307 = @handle_redirects;
+>                  }
+>                  location @handle_redirects {
+>                      set $saved_redirect_location '$upstream_http_location';
+>                      proxy_pass $saved_redirect_location;
+>                  }
+>                 ```
 >           - root [fileDir]  **静态文件-静态文件根目录**
 >           - index [filePath]  **静态文件-默认访问页面**
 >           - expires [times]  **静态文件-静态文件过期时间**
