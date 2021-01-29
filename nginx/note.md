@@ -40,7 +40,14 @@
 >   - gzip_types [content-type] **gzip压缩目标类型**
 >   - gzip_vary [on/off]  **给CDN和代理服务器使用**
 >   - upstream [serverName] {}  **设定实际服务器列表**
->       - server [ip:port] [weight]=[number]  **weigth权重**
+>       - server [ip:port]
+>           - **默认轮询**
+>           - [weight]=[number]  **weigth权重，不能加空格**
+>           - down  **不参与负载**
+>           - backup  **当其他非backup机器down或忙时，参与负载**
+>           - max_conns [count] **最大连接数**
+>           - max_fails [count] **失败多少次踢出**
+>           - fail_timeout [times]  **踢出后等待时长，等待过后继续接收请求，如果还是失败继续循环**
 >   - server {}  **虚拟主机**
 >       - listen [port]  **监听端口**
 >       - server_name [hostname]  **虚拟主机访问名**
@@ -60,6 +67,21 @@
 >           - Host $host;
 >           - X-Forwarder-For $remote_addr
 >       - location [regexp] {}  **虚拟目录，多个location时，会优先匹配regexp更进准匹配的location，不按location编写顺序**
+>           - root [fileDir]  **静态文件-静态文件根目录**
+>           - index [filePath]  **静态文件-默认访问页面**
+>           - expires [times]  **静态文件-静态文件过期时间**
+>           - stub_status [on/off]  **开启用于查看基本的服务器信息，一般单独location**
+>           - access_log  [on/off]  **访问日志**
+>           - auth_basic [authName]  **基于http basic协议认证**
+>           - auth_basic_user_file [authFilePath]  **用户认证密码文件路径**
+>               - ```
+>                   httpd-tools
+>                   yum install httpd
+>                   htpasswd -c -d /usr/local/users [username]
+>                   生成用户认证密码文件
+>                 ```
+>           - deny []  **禁止访问，（ip，ip段）**
+>           - allow []  **允许访问**
 >           - proxy_pass [url]  **反向代理-反向代理路径，可配置upstream**
 >               - 当代理外部链接时，有可能出现302，导致客户端直接302重定向，nginx无法真实代理请求数据
 >                ```
@@ -73,13 +95,7 @@
 >                      proxy_pass $saved_redirect_location;
 >                  }
 >                 ```
->           - root [fileDir]  **静态文件-静态文件根目录**
->           - index [filePath]  **静态文件-默认访问页面**
->           - expires [times]  **静态文件-静态文件过期时间**
->           - stub_status [on/off]  ****
->           - access_log  [on/off]  ****
->           - auth_basic []
->           - auth_basic_user_file []
->           - deny []  **禁止访问**
+>           - proxy_cache [cacheName]  **代理缓存，把下游请求数据缓存起来**
+>       - proxy_cache_path [fileDir] [level]=[] [keys_zone]=[cacheName]  **本地缓存，使用磁盘缓存**
 >       - error_page [code] [filePath]  **异常页面**
 >
