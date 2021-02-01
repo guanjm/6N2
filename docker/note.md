@@ -61,6 +61,7 @@
 >       - PS：进入容器后，可通过exit命令退出容器。当失败时，可先通过ctrl+c，再执行exit
 >   - docker build [dockerfile目录]
 >       - t [镜像名]<:tag> 定义镜像名
+>   - docker cp [容器id]:[容器内文件名] [宿主机文件名]
 >   - docker inspect [容器id] **显示容器信息**
 >   - docker network [option] **docker网络服务**
 >
@@ -125,16 +126,16 @@
 >   - docker build阶段
 > - CMD 
 >   - 容器启动时执行命令 
->   - docker create阶段
+>   - docker run阶段
 >   - PS:
 >       - 当有多条命令时，只会执行最后的命令
 >       - 如果容器启动时附加命令，则CMD不执行
+>       - 当配置了ENTRYPOINT时，该命令作为参数
 > - ENTRYPOINT 
 >   - 容器启动后执行命令 
->   - docker create阶段
+>   - docker run阶段
 >   - PS:
 >       - 当有多条命令时，只会执行最后的命令
->       - 启动容器时的命令参数可获取
 > PS: 可通过&&连接命令减少镜像层数
 > ```
 >   #shell命令格式[使用子进程]

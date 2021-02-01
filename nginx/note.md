@@ -100,6 +100,11 @@
 >           - proxy_cache [cacheName]  **代理缓存，把下游请求数据缓存起来**
 >       - proxy_cache_path [fileDir] [level]=[] [keys_zone]=[cacheName]  **本地缓存，使用磁盘缓存**
 >       - error_page [code] [filePath]  **异常页面**
+
+# session同步
+> - tomcat  + memcache插件（需要在tomcat配置文件配置）
+>       - 当出现session无法同步时，有可能是两台服务器时间不一致，导致session过期
 >
+
 
 # openssl
