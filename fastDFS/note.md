@@ -84,7 +84,8 @@
 >   vi /etc/fdfs/client.conf
 >       base_path=/home/fds
 >       tracker_server=[trackerServerIP]:[trackerServerPort]  #tracker服务器IP和端口
->       fdfs_upload_file /etc/fdfs/client.conf [filePath]  #保存后测试，返回id表示成功。
+>   
+>   fdfs_upload_file /etc/fdfs/client.conf [filePath]  #保存后测试，返回id表示成功。
 > ```
 > 
 > ## 配置nginx访问
@@ -159,4 +160,5 @@
 > 如果nginx无法访问 先检查防火墙 和 mod_fastdfs.conf文件tracker_server是否一致
 > 如果不是在/usr/local/src文件夹下安装 可能会编译出错
 > 如果 unknown directive "ngx_fastdfs_module" in /usr/local/nginx/conf/nginx.conf:151，可能是nginx一直是启动的，必须要重启nginx才可以，`nginx -s reload`无效。
+> 可通过base_path配置的路径查看日志
 >
