@@ -67,8 +67,10 @@
 >           - Host $host;
 >           - X-Forwarder-For $remote_addr
 >       - location [regexp] {}  **虚拟目录，多个location时，会优先匹配regexp更进准匹配的location，不按location编写顺序**
->           - root [fileDir]  **静态文件-静态文件根目录**
+>           - root [fileDir]  **静态文件-静态文件根目录，多个location时，只能有一个**
+>           - alias [fileDir] **静态文件-静态文件根目录，需要多个虚拟目录时，使用此参数**
 >           - index [filePath]  **静态文件-默认访问页面**
+>           - autuoindex [on/off]  **开启自动索引，自动生成当前目录列表**
 >           - expires [times]  **静态文件-静态文件过期时间**
 >           - stub_status [on/off]  **开启用于查看基本的服务器信息，一般单独location**
 >           - access_log  [on/off]  **访问日志**
@@ -99,3 +101,5 @@
 >       - proxy_cache_path [fileDir] [level]=[] [keys_zone]=[cacheName]  **本地缓存，使用磁盘缓存**
 >       - error_page [code] [filePath]  **异常页面**
 >
+
+# openssl
