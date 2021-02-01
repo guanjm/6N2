@@ -108,3 +108,55 @@
 >       }
 > ```
 > http://[ip]:[port]/[文件路径]  #测试下载，用外部浏览器访问已上传过的文件
+
+# 启动
+> ## 防火墙
+> ```
+>   systemctl stop firewalld.service  #关闭防火墙
+>   systemctl restart firewalld.service  #重启防火墙
+> ```
+> 
+> ## tracker
+> ```
+>   /etc/init.d/fdfs_trackerd start  #启动tracker服务
+>   /etc/init.d/fdfs_trackerd restart  #重启tracker服务
+>   /etc/init.d/fdfs_trackerd stop #停止tracker服务
+>   chkconfig fdfs_trackerd on #自启动tracker服务
+> ```
+> 
+> ## storage
+> ```
+>   /etc/init.d/fdfs_storaged start  #启动storage服务
+>   /etc/init.d/fdfs_storaged restart  #重动storage服务
+>   /etc/init.d/fdfs_storaged stop  #停止动storage服务
+>   chkconfig fdfs_storaged on  #自启动storage服务
+> ```
+>
+> ## nginx
+> ```
+>   /usr/local/nginx/sbin/nginx  #启动nginx
+>   /usr/local/nginx/sbin/nginx -s reload  #重启nginx
+>   /usr/local/nginx/sbin/nginx -s stop  #停止nginx
+> ```
+> 
+> ## 检测集群
+> ```
+>   /usr/bin/fdfs_monitor /etc/fdfs/storage.conf  #会显示会有几台服务器，有三台就会显示Storage 1-Storage 3 的详细信息
+> ```
+
+# 说明
+> ## 配置文件
+> tracker_server #有几台服务器写几个
+> group_name #地址的名称的命名
+> bind_addr #服务器ip绑定
+> store_path_count #store_path(数字)有几个写几个
+> store_path(数字) #设置几个储存地址写几个 从0开始
+>
+> ## 可能遇到的问题
+> 如果不是root 用户 你必须在除了cd的命令之外 全部加sudo
+> 如果不是root 用户 编译和安装分开进行 先编译再安装
+> 如果上传成功 但是nginx报错404 先检查mod_fastdfs.conf文件中的store_path0是否一致
+> 如果nginx无法访问 先检查防火墙 和 mod_fastdfs.conf文件tracker_server是否一致
+> 如果不是在/usr/local/src文件夹下安装 可能会编译出错
+> 如果 unknown directive "ngx_fastdfs_module" in /usr/local/nginx/conf/nginx.conf:151，可能是nginx一直是启动的，必须要重启nginx才可以，`nginx -s reload`无效。
+>
