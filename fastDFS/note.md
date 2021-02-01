@@ -63,5 +63,48 @@
 
 # 单机部署
 > ## tracker配置
->
->
+> ```
+>   vi /etc/fdfs/tracker.conf
+>       port=22122  #tracker服务器端口（默认22122，一般不修改）
+>       base_path=/home/dfs  #存储日志和数据的根目录
+> ```
+> 
+> ## storage配置
+> ```
+>   vi /etc/fdfs/storage.conf
+>       port=23000  #storage服务端口（默认23000，一般不修改）
+>       base_path=/home/dfs  #数据和日志文件存储根目录
+>       store_path0=/home/fds  #第一个存储目录
+>       tracker_server=[trackerServerIP]:[trackerServerPort]  #tracker服务器IP和端口
+>       http.server_port=8888  #http访问文件的端口（默认8888，看情况修改，和nginx中保护一致）
+> ```
+> 
+> ## client测试
+> ```
+>   vi /etc/fdfs/client.conf
+>       base_path=/home/fds
+>       tracker_server=[trackerServerIP]:[trackerServerPort]  #tracker服务器IP和端口
+>       fdfs_upload_file /etc/fdfs/client.conf [filePath]  #保存后测试，返回id表示成功。
+> ```
+> 
+> ## 配置nginx访问
+> ```
+>   vi /etc/fdfs/mod_fastdfs.conf
+>       tracker_server=[trackerServerIP]:[trackerServerPort]  #tracker服务器IP和端口
+>       url_have_group_name=true
+>       store_path=/home/dfs
+>   
+>   vi  /usr/local/nginx/conf/nginx.conf
+>       server {
+>           listen 8888;  #该端口为storage.conf中http.server_port相同
+>           server_name local;
+>           location ~/group[0-9]/ {
+>               ngx_fastdfs_module;
+>           }
+>           error_page 500 502 503 504 /50x.html
+>           location = /50x.html {
+>               root html;
+>           }
+>       }
+> ```
+> http://[ip]:[port]/[文件路径]  #测试下载，用外部浏览器访问已上传过的文件
