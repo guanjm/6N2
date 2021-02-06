@@ -147,11 +147,24 @@
 >   - 解决方案：DR
 
 # DR（Direct Routing）直接路由 2层
-> - 猜想：如何能转发不同的请求
+> - 猜想：如何能更快地转发不同的请求
 >   - 请求的转发，一般来说都是根据目标IP，通过ARP来寻找MAC地址映射去到不同的机器。实际上可以直接干预MAC的拼接，目标IP不变，指定MAC地址。
 >   - 要想机器不抛弃请求，必须要让机器认为承认自己的IP是请求的目标IP，同时也对其他机器不承认自己是请求的目标IP。
->       - 承认自己的IP是请求的目标IP：（常识：每个网卡都可以配置多个IP），LO：回环形虚拟网卡添加上目标IP
->       - 其他机器不承认自己是请求的目标IP：（常识：外部只能直接访问物理网卡，不能直接访问配置的虚拟网卡）隐藏配置的目标IP，在虚拟网卡添加目标IP
+>       1. 承认自己的IP是请求的目标IP：LO：回环形虚拟网卡添加上目标IP
+>       2. 其他机器不承认自己是请求的目标IP：隐藏配置的目标IP，在虚拟网卡添加目标IP  
+>       3. 一台机器上能有多个网卡（物理+虚拟），每个网卡上能配置多个地址（IP）
+>         kernel parameter:/proc/sys/net/ipv4/conf/* 
+>       - arp_ignore：控制系统收到外部arp请求时，是否要返回arp响应  
+>           0：请求到达的【机器上所有网卡】地址有匹配的就响应  
+>           ![alt arg_ignore_0](src/picture/arp_ignore_0.png)  
+>           1：请求到达的【网卡】地址有匹配的就响应  
+>           ![alt arg_ignore_1](src/picture/arp_ignore_1.png)  
+>       - arp_announce：控制系统在对外发送arp请求时，如何选择arp请求数据包的源IP地址  
+>           0：可使用机器上所有网卡的任一IP作为arp请求的源IP，默认arp请求的目标地址  
+>           ![alt arg_announce_0](src/picture/arp_announce_0.png)  
+>           1：尽量避免使用不属于该发送网卡子网的本地地址作为arp请求的源IP，匹配失败跳到2配置
+>           2：忽略IP数据包的源IP地址，选择该发送网卡上最适合的IP作为arp请求的源IP。
+>           ![alt arg_announce_2](src/picture/arp_announce_2.png)  
 >   - 因此需要对ARP作改造，同时因为基于ARP，所以需要基于同一局域网内。
 
 # TUN 隧道
