@@ -171,3 +171,46 @@
 > - 产生原因：负载均衡后面的机器不在同一个局域网
 > - 原理：在原有的3层网络数据包的基础上，再包裹一层网络源地址和目标地址，让数据包达到目标地址
 >   - 类比案例：VPN、翻墙
+
+# LVS
+> 负载策略：（关于均衡策略的实现猜想，通过拆包偷窥里面的数据，来缺失连接的建立和断开）
+>   - 静态
+>       1. rr（轮询）
+>       2. wwr
+>       3. dh
+>       4. sh
+>   - 动态
+>       1. lc（最少连接）
+>       2. wlc（加权最少连接）
+>       3. sed（最短期望延迟）
+>       4. nq（never queue）
+>       5. LBLC（基于本地的最少连接）
+>       6. DH
+>       7. LBLCR（基于本地的带复制功能的最少连接）
+> - lvs代码已整合到linux内核里，不过需要安装调用接口ipvs```yum install ipvsadm -y```  
+> - lvs配置：
+>   1. lvs负载均衡直接转发的服务器
+>       1. 修改内核（改造arp协议）
+>           - echo 1 > /proc/sys/net/ipv4/conf/*/arp_ignore
+>           - echo 2 > /proc/sys/net/ipv4/conf/*/arp_announce
+>       2. 设置访问IP
+>           ifconfig lo:2 xxx.xxx.xxx.xxx(访问IP) netmark 255.255.255.255
+>   2. lvs负载均衡服务器
+>       1. 设置访问IP
+>           ifconfig eth0:2 xxx.xxx.xxx.xxx(访问IP) netmark 255.255.255.0
+>       2. 按照lvs工具
+>           yum install -y ipvsadm
+>           ipvsadm -A -t xxx.xxx.xxx.xxx(访问IP):[port] -s rr
+>           ipvsadm -a -t xxx.xxx.xxx.xxx(访问IP):[port] -r XXX.XXX.XXX.XXX(转发服务器IP) -g(轮询) -w(权重) 1
+>   3. 定位问题
+>       - lvs负载均衡服务器
+>           - netstat -natp  **因为没有建立连接，查看不多socket**
+>           - ipvsadm -lnc  **查看lvs连接情况，lvs实际上不会建立连接，只是通过偷窥数据包来判断连接情况**  
+>         
+>               | pro | expire | state | source | virtual | destination |
+>               | --- | --- | --- | --- | --- | --- |  
+>               | 协议 | 过期时间 | 状态 | 源地址 | lvs配置地址 | 目标地址 |  
+>               当state为wait_timeout时，一般连接建立正常
+>               当state为sync_recv时，说明转发后有问题，目标地址没有接收数据包
+>       - lvs负载均衡直接转发的服务器
+>           - netstat -natp  **因为没有建立连接，查看不多socket**
