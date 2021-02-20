@@ -78,7 +78,9 @@
 >   1. 所有机器自己记录所有地址的数据，数据海量，速度过慢
 >   2. IP协议：下一跳机制：只记录某个范围内数据 => 通过路由找到下一个范围内数据。。。（被抨击，存在丢包问题，可经过试验没问题）
 > - IP协议  
->   ```ping www.baidu.com```
+>   ```
+>       ping www.baidu.com
+>   ```
 >   1. 通过DNS获取目标IP
 >   2. 通过目标IP，与Genmask（子网掩码）作位与运算，再与Destination（网络号）匹配，获得最终Gateway（网关）  
 >   ![alt 路由表](src/picture/route.jpeg)
@@ -190,18 +192,28 @@
 > - lvs代码已整合到linux内核里，不过需要安装调用接口ipvs```yum install ipvsadm -y```  
 > - lvs配置：
 >   1. lvs负载均衡直接转发的服务器
->       1. 修改内核（改造arp协议）
->           - echo 1 > /proc/sys/net/ipv4/conf/*/arp_ignore
->           - echo 2 > /proc/sys/net/ipv4/conf/*/arp_announce
+>       1. 修改内核（改造arp协议），需先配置内核参数，再设置网卡
+>           ```
+>               echo 1 > /proc/sys/net/ipv4/conf/*/arp_ignore
+>               echo 2 > /proc/sys/net/ipv4/conf/*/arp_announce
+>           ```
 >       2. 设置访问IP
->           ifconfig lo:2 xxx.xxx.xxx.xxx(访问IP) netmark 255.255.255.255
+>           ```
+>               ifconfig lo:2 xxx.xxx.xxx.xxx(访问IP) netmark 255.255.255.255
+>               ifconfig lo:2 down 删除网卡配置
+>           ```
 >   2. lvs负载均衡服务器
 >       1. 设置访问IP
->           ifconfig eth0:2 xxx.xxx.xxx.xxx(访问IP) netmark 255.255.255.0
+>           ```
+>               ifconfig eth0:2 xxx.xxx.xxx.xxx(访问IP) netmark 255.255.255.0
+>           ```
 >       2. 按照lvs工具
->           yum install -y ipvsadm
->           ipvsadm -A -t xxx.xxx.xxx.xxx(访问IP):[port] -s rr
->           ipvsadm -a -t xxx.xxx.xxx.xxx(访问IP):[port] -r XXX.XXX.XXX.XXX(转发服务器IP) -g(轮询) -w(权重) 1
+>           ```
+>               yum install -y ipvsadm
+>               ipvsadm -A -t xxx.xxx.xxx.xxx(访问IP):[port] -s rr
+>               ipvsadm -a -t xxx.xxx.xxx.xxx(访问IP):[port] -r XXX.XXX.XXX.XXX(转发服务器IP) -g(轮询) -w(权重) 1
+>               ipvsadm -C 删除lvs配置
+>           ```
 >   3. 定位问题
 >       - lvs负载均衡服务器
 >           - netstat -natp  **因为没有建立连接，查看不多socket**
@@ -229,4 +241,52 @@
 >       2. 主机定期主动广播主机状态
 >   - 效率
 >       1. 权重（不用竞争，进行推选）
+> - 猜想keepalived拥有功能
+>   1. keepalived对内：keepalived主备
+>   2. keepalived对外：检测外部服务健康状态
+>   3. keepalived对lvs：内置lvs功能
+> - keepalived配置
+>   1. lvs负载均衡服务器
+>       1. 安装keepalived
+>           ```
+>               yum install -y keepalived ipvsadm
+>           ```
+>       2. keepalived配置
+>           ```
+>               vi /etc/keepalived/keepalived.conf
+>                  vrrp_instance [masterName] {} **虚拟路由冗余协议实例**
+>                       state [MASTER/BACKUP]  **主机填MASTER，备机填BACKUP**
+>                       interface [网卡号]
+>                       virtual_router_id [虚拟路由] **用于区分不同的keepalived集群，同一个keepalived集群相同**
+>                       priority [0-100] **权重，值越大，权重越大，主机权重比备机大**
+>                       virtual_ipaddress {}
+>                           [IPADDR]/[MASK] brd [IPADDR] dev [string] scope [scope] label [label]
+>                           192.168.1.1/24 dev eth1 label eth1:1 **同ipconfig配置虚拟网卡**
+>                   virtual_server [ip] [port] {}  **虚拟服务，lvs功能**
+>                       lb_algo [负载策略]  **rr**
+>                       lb_kind [负载类型]  **NAT，DR**
+>                       persistence_timeout [second]  **持久化时长，数据包保持向其中一个服务的持续时间，以免多台服务接收请求浪费资源，测试时可配置为0**
+>                       protocol [TCP]
+>                       real_server [ip] [port] {}  **真实服务**
+>                           weight [number]  **权重**
+>                           [SSL_GET/HTTP_GET] {}  **检测真实服务健康状态**
+>                               url {} 
+>                                   path [string]  **访问路径**
+>                                   digest [string]
+>                                   status_code [int]
+>           ```
+>       3. 启动keepalived
+>           ```
+>               service keepalived start
+>           ```
+>       4. 校验keepalived是否生效
+>           ```
+>               ifconfig
+>               ipvsadm -ln
+>           ```
+>       5. master机down，backup机ifconfig才显示
+>          ipvsadm 主备都持续监测real_server健康状态
+>          master机up，自动backup机down 
+>       
+>   
 >   
