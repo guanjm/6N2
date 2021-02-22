@@ -252,7 +252,7 @@
 > - 猜想keepalived拥有功能
 >   1. keepalived对内：keepalived主备
 >   2. keepalived对外：检测外部服务健康状态
->   3. keepalived对lvs：内置lvs功能
+>   3. keepalived对lvs：内置lvs功能（ipvsadm+ifconfig）
 > - keepalived配置
 >   1. lvs负载均衡服务器
 >       1. 安装keepalived
@@ -292,9 +292,15 @@
 >               ifconfig
 >               ipvsadm -ln
 >           ```
->       5. master机down，backup机ifconfig才显示（主机宕机，备机ip漂移）
->          ipvsadm 主备都持续监测real_server健康状态
->          master机up，backup机down（主机恢复，备机下线，基于权重）
->       
->   
->   
+>       5. PS
+>           - master机down，backup机ifconfig才显示（主机宕机，备机ip漂移）
+>           - ipvsadm 主备都持续监测real_server健康状态
+>           - master机up，backup机down（主机恢复，备机下线，基于权重）
+> - keepalived问题
+>   1. keepalived启动后，通过```ps ef```命令可看到有一条主进程（主程序），多条子进程（监测多个服务健康）  
+>   2. 当keepalived相关进程忽然挂掉（主机直接```kill -9```），虚拟ip会不清掉（主进程无法回收资源），ipvsadm也不会清掉（子进程无法回收资源）  
+>   3. 备机收不到主机定期健康报告，自动上线，导致客户端的请求数据包无法正常转发，出现请求失败（破坏tcp三次握手，四次分手原子性）
+>   4. 起因：需要依赖keepalived进程的正常运行和结束
+>   5. 方案：无限套娃（上层无限套keepalived）
+>   6. 结论：高可用不可靠
+>   7. 其他可靠高可用技术：zookeeper
